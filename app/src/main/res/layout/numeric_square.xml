@@ -17,7 +17,7 @@
             android:textColor="@android:color/white"
             android:text="2" android:textStyle="bold"
             android:autoSizeMaxTextSize="100sp"
-            android:autoSizeMinTextSize="16sp"
+            android:autoSizeMinTextSize="10sp"
             android:autoSizeTextType="uniform"/>
 
 </merge>

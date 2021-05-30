@@ -1,7 +1,9 @@
 package com.nemesiss.dev.crossingcontainermovement.view
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
 import android.widget.RelativeLayout
@@ -31,5 +33,27 @@ class NumericSquare @JvmOverloads constructor(
         val size = min(width, height)
         val squareSpec = MeasureSpec.makeMeasureSpec(size, MeasureSpec.EXACTLY)
         super.onMeasure(squareSpec, squareSpec)
+    }
+
+    fun getCardBackground(): Drawable {
+        return binding.root.background
+    }
+
+    fun setCardBackground(d: Drawable) {
+        binding.root.background = d
+    }
+
+    fun getTextColor() = binding.numberTextview.currentTextColor
+
+    fun setTextColor(color: Int) {
+        binding.numberTextview.setTextColor(color)
+    }
+
+    fun setTextColor(color: ColorStateList) {
+        binding.numberTextview.setTextColor(color)
+    }
+
+    fun setText(text: CharSequence) {
+        binding.numberTextview.text = text
     }
 }
