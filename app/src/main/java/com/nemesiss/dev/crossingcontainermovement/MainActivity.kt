@@ -77,10 +77,4 @@ class MainActivity : AppCompatActivity() {
         getGlobalVisibleRect(r)
         return r
     }
-
-    private companion object {
-        const val LEFT = false
-        const val RIGHT = true
-        const val TAG = "MainActivity"
-    }
 }
