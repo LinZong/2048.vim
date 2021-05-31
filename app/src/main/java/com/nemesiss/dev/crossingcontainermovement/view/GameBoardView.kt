@@ -2,6 +2,7 @@ package com.nemesiss.dev.crossingcontainermovement.view
 
 import android.content.Context
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.util.AttributeSet
 import android.util.Log
 import android.view.*
@@ -17,6 +18,7 @@ import com.nemesiss.dev.crossingcontainermovement.action.Died
 import com.nemesiss.dev.crossingcontainermovement.action.ElementAction
 import com.nemesiss.dev.crossingcontainermovement.action.Movement
 import com.nemesiss.dev.crossingcontainermovement.model.Coord
+import com.nemesiss.dev.crossingcontainermovement.model.ElementColorTable
 import com.nemesiss.dev.crossingcontainermovement.util.dp2Px
 import com.nemesiss.dev.crossingcontainermovement.view.animator.AnimatorTracker
 import com.nemesiss.dev.crossingcontainermovement.view.animator.BumpAppearAnimator
@@ -125,6 +127,22 @@ class GameBoardView @JvmOverloads constructor(
         return gestureDetector.onTouchEvent(event)
     }
 
+
+    fun notifyActionsArrived(actions: List<ElementAction>) {
+        executeActions(actions)
+    }
+
+    private fun getContainerAt(coord: Coord): FrameLayout {
+        val index = coord.row * size + coord.col
+        return getChildAt(index) as FrameLayout
+    }
+
+    private fun getNumericSquareAt(coord: Coord): NumericElement? {
+        val container = getContainerAt(coord)
+        if (container.childCount == 0) return null
+        return container.getChildAt(container.childCount - 1) as? NumericElement
+    }
+
     private fun resize(oldSize: Int, newSize: Int) {
         when {
             oldSize == newSize -> return
@@ -146,21 +164,6 @@ class GameBoardView @JvmOverloads constructor(
                 }
             }
         }
-    }
-
-    fun notifyActionsArrived(actions: List<ElementAction>) {
-        executeActions(actions)
-    }
-
-    private fun getContainerAt(coord: Coord): FrameLayout {
-        val index = coord.row * size + coord.col
-        return getChildAt(index) as FrameLayout
-    }
-
-    private fun getNumericSquareAt(coord: Coord): NumericElement? {
-        val container = getContainerAt(coord)
-        if (container.childCount == 0) return null
-        return container.getChildAt(container.childCount - 1) as? NumericElement
     }
 
     private fun checkConsistency() {
@@ -231,9 +234,6 @@ class GameBoardView @JvmOverloads constructor(
                         .track { BumpAppearAnimator(ns, container) }
                         .start()
                 }
-                is Died -> {
-                    Toast.makeText(context, "You are died!", Toast.LENGTH_SHORT).show()
-                }
             }
         }
     }
@@ -245,7 +245,6 @@ class GameBoardView @JvmOverloads constructor(
     private fun buildNumericElement(element: GameBoard.Element): NumericElement {
         val ns = NumericElement(context)
         ns.setTextColor(Color.WHITE)
-        ns.setCardBackground(context.getDrawable(R.drawable.round_ripple_purple)!!)
         ns.layoutParams = FrameLayout.LayoutParams(
             FrameLayout.LayoutParams.MATCH_PARENT,
             FrameLayout.LayoutParams.MATCH_PARENT,

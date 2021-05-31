@@ -7,7 +7,10 @@ buildscript {
         }
         maven {
             url 'https://maven.aliyun.com/repository/central/'
-       }
+        }
+        maven {
+            url 'https://maven.aliyun.com/repository/jcenter/'
+        }
     }
     dependencies {
         classpath "com.android.tools.build:gradle:4.1.1"
@@ -25,6 +28,9 @@ allprojects {
         }
         maven {
             url 'https://maven.aliyun.com/repository/central/'
+        }
+        maven {
+            url 'https://maven.aliyun.com/repository/jcenter/'
         }
     }
 }

@@ -61,25 +61,9 @@ class GameBoard(val bindingView: GameBoardView) {
         return view[row][col]
     }
 
-    fun stringifyGameBoardView(view: GameBoardMap): String {
-        val sb = StringBuilder()
-        for (r in 0 until size) {
-            for (c in 0 until size) {
-                sb.append(view[r][c].value)
-                sb.append(" ")
-            }
-            sb.append("\n")
-        }
-        return sb.toString()
-    }
 
     fun handleGesture(gestureDirection: GestureDirection): List<ElementAction> {
         if (disabled) return emptyList()
-
-        if (checkDied()) {
-            handleDied()
-            return emptyList()
-        }
 
         val mergeActions = when (gestureDirection) {
             GestureDirection.UP -> view.mergeBottomUp()
@@ -100,6 +84,12 @@ class GameBoard(val bindingView: GameBoardView) {
         playActions(mergedView, generateActions)
 
         val finalActions = alignmentActions + generateActions
+
+        if (finalActions.isEmpty()) {
+            handleDied()
+            return emptyList()
+        }
+
         bindingView.notifyActionsArrived(finalActions)
         playActions(fakeView, finalActions)
         view = cloneView(mergedView, true)
@@ -183,22 +173,6 @@ class GameBoard(val bindingView: GameBoardView) {
         }
     }
 
-    private fun cloneView(cleanCombine: Boolean = false): GameBoardMap {
-        return cloneView(view, cleanCombine)
-    }
-
-    private fun cloneView(original: GameBoardMap, cleanCombine: Boolean = false): GameBoardMap {
-        val newView = newViewOf(size)
-        for (r in 0 until size) {
-            for (c in 0 until size) {
-                newView[r][c] = original[r][c].copy()
-                if (cleanCombine) {
-                    newView[r][c].combineFrom = null
-                }
-            }
-        }
-        return newView
-    }
 
     private fun checkDied(): Boolean {
         if (view.mergeLTR().isNotEmpty()) {
@@ -213,10 +187,11 @@ class GameBoard(val bindingView: GameBoardView) {
         if (view.mergeBottomUp().isNotEmpty()) {
             return false
         }
-
-        // no combination. died
         return true
     }
+
+
+    // ============= Action Generators =============
 
     private fun GameBoardMap.alignmentLTR(): List<ElementAction> {
         val sequences = arrayListOf<ElementAction>()
@@ -469,5 +444,36 @@ class GameBoard(val bindingView: GameBoardView) {
 
     private infix fun Element.canCombine(other: Element): Boolean {
         return this != Element.EMPTY && other != Element.EMPTY && value == other.value
+    }
+
+    // ============= Helpers =============
+
+    private fun cloneView(cleanCombine: Boolean = false): GameBoardMap {
+        return cloneView(view, cleanCombine)
+    }
+
+    private fun cloneView(original: GameBoardMap, cleanCombine: Boolean = false): GameBoardMap {
+        val newView = newViewOf(size)
+        for (r in 0 until size) {
+            for (c in 0 until size) {
+                newView[r][c] = original[r][c].copy()
+                if (cleanCombine) {
+                    newView[r][c].combineFrom = null
+                }
+            }
+        }
+        return newView
+    }
+
+    private fun stringifyGameBoardView(view: GameBoardMap): String {
+        val sb = StringBuilder()
+        for (r in 0 until size) {
+            for (c in 0 until size) {
+                sb.append(view[r][c].value)
+                sb.append(" ")
+            }
+            sb.append("\n")
+        }
+        return sb.toString()
     }
 }

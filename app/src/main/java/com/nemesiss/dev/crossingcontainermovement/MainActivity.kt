@@ -12,6 +12,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+
         gameBoard = GameBoard(binding.gameBoardView)
         binding.gameBoardView.setDecorView(window.decorView as ViewGroup)
 //        gameBoard.setup()

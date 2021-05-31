@@ -7,6 +7,8 @@
         tools:context=".MainActivity">
 
     <com.nemesiss.dev.crossingcontainermovement.view.GameBoardView android:layout_width="350dp"
+                                                                   android:padding="2dp"
+                                                                   android:background="@color/board_background"
                                                                    android:id="@+id/game_board_view"
                                                                    android:layout_centerInParent="true"
                                                                    android:layout_height="350dp"
