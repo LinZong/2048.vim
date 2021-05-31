@@ -1,10 +1,13 @@
 package com.nemesiss.dev.crossingcontainermovement
 
+import android.util.Log
+import com.nemesiss.dev.crossingcontainermovement.action.Appear
 import com.nemesiss.dev.crossingcontainermovement.action.Combination
 import com.nemesiss.dev.crossingcontainermovement.action.ElementAction
 import com.nemesiss.dev.crossingcontainermovement.action.Movement
 import com.nemesiss.dev.crossingcontainermovement.model.Coord
 import com.nemesiss.dev.crossingcontainermovement.view.GameBoardView
+import java.util.concurrent.ThreadLocalRandom
 
 
 typealias GameBoardMap = Array<Array<GameBoard.Element>>
@@ -39,6 +42,12 @@ class GameBoard(val bindingView: GameBoardView) {
         fun copy() = Element(value, combineFrom)
     }
 
+    init {
+        bindingView.relatedGameBoard = this
+    }
+
+    var disabled = false
+
     private val size = bindingView.size
 
     var view: GameBoardMap = newViewOf(size)
@@ -47,6 +56,7 @@ class GameBoard(val bindingView: GameBoardView) {
     fun set(element: Element, coord: Coord) {
         val (row, col) = coord
         view[row][col] = element
+        bindingView.notifyActionsArrived(listOf(Appear(coord, element)))
     }
 
     fun get(coord: Coord): Element {
@@ -67,19 +77,91 @@ class GameBoard(val bindingView: GameBoardView) {
     }
 
     fun handleGesture(gestureDirection: GestureDirection): List<ElementAction> {
+        if (disabled) return emptyList()
         val mergeActions = when (gestureDirection) {
             GestureDirection.UP -> view.mergeBottomUp()
             GestureDirection.DOWN -> view.mergeTopDown()
             GestureDirection.LEFT -> view.mergeRTL()
             GestureDirection.RIGHT -> view.mergeLTR()
         }
+        val fakeView = cloneView()
         val mergedView = cloneView()
-        for (action in mergeActions) {
-            action.apply(mergedView)
-        }
+        playActions(mergedView, mergeActions)
+
         // 此时newView携带了合并信息
         // 再调用handleAlignment生成最终的指令序列
-        return handleAlignment(mergedView, gestureDirection)
+        val alignmentActions = handleAlignment(mergedView, gestureDirection)
+        playActions(mergedView, alignmentActions)
+
+        val generateActions = randomlyGenerateNewElement(mergedView)
+        playActions(mergedView, generateActions)
+
+        val finalActions = alignmentActions + generateActions
+        bindingView.notifyActionsArrived(finalActions)
+        playActions(fakeView, finalActions)
+        view = cloneView(mergedView, true)
+
+        if (GameConfig.DEBUG) {
+            Log.d(
+                "GB",
+                " $gestureDirection \n" + stringifyGameBoardView(view))
+            var notTheSame = false
+            for(r in 0 until size) {
+                for(c in 0 until size) {
+                    if (view[r][c] != fakeView[r][c]) {
+                        Log.e("GB", "view and fakeView are not the same! at $r $c")
+                        notTheSame = true
+                    }
+                }
+            }
+            if (notTheSame) {
+                Log.e("GB", "NotTheSame \n ${stringifyGameBoardView(fakeView)}")
+            } else {
+                Log.d("GB", "GameBoardMap check passed!")
+            }
+        }
+        return finalActions
+    }
+
+    fun setup() {
+        val actions = randomlyGenerateNewElement(view)
+        playActions(actions)
+        bindingView.notifyActionsArrived(actions)
+    }
+
+    private fun playActions(actions: List<ElementAction>) {
+        playActions(view, actions)
+    }
+
+    private fun playActions(v: GameBoardMap, actions: List<ElementAction>) {
+        for (action in actions) {
+            action.apply(v)
+        }
+    }
+
+    private fun randomlyGenerateNewElement(gameBoardMap: GameBoardMap): List<Appear> {
+        val freeCoords = arrayListOf<Coord>()
+        val size = gameBoardMap.size
+        for (i in 0 until size) {
+            for (j in 0 until size) {
+                if (gameBoardMap[i][j] == Element.EMPTY) {
+                    freeCoords += Coord(i, j)
+                }
+            }
+        }
+        Log.d("GB", "NewElementGenerator See: \n ${stringifyGameBoardView(gameBoardMap)}")
+        return Array(1) { freeCoords.randomOrNull() }
+            .filterNotNull()
+            .map { c -> Appear(c, Element(random2Or4())) }
+    }
+
+    private fun random1Or2(): Int {
+        val tr = ThreadLocalRandom.current()
+        return tr.nextInt(1, 3)
+    }
+
+    private fun random2Or4(): Int {
+        return random1Or2() * 2
     }
 
     private fun handleAlignment(view: GameBoardMap, direction: GestureDirection): List<ElementAction> {
@@ -118,12 +200,12 @@ class GameBoard(val bindingView: GameBoardView) {
                 if (e != Element.EMPTY) {
                     val combineFrom = e.combineFrom
                     if (combineFrom != null) {
+                        sequences += Movement(Coord(row, col), Coord(row, alignCol), bumpOnEnd = true)
                         sequences += Movement(
                             Coord(combineFrom.row, combineFrom.col),
                             Coord(row, alignCol),
                             disappearOnEnd = true
                         )
-                        sequences += Movement(Coord(row, col), Coord(row, alignCol), bumpOnEnd = true)
                     } else {
                         sequences += Movement(Coord(row, col), Coord(row, alignCol))
                     }
@@ -145,12 +227,12 @@ class GameBoard(val bindingView: GameBoardView) {
                 if (e != Element.EMPTY) {
                     val combineFrom = e.combineFrom
                     if (combineFrom != null) {
+                        sequences += Movement(Coord(row, col), Coord(row, alignCol), bumpOnEnd = true)
                         sequences += Movement(
                             Coord(combineFrom.row, combineFrom.col),
                             Coord(row, alignCol),
                             disappearOnEnd = true
                         )
-                        sequences += Movement(Coord(row, col), Coord(row, alignCol), bumpOnEnd = true)
                     } else {
                         sequences += Movement(Coord(row, col), Coord(row, alignCol))
                     }
@@ -172,12 +254,12 @@ class GameBoard(val bindingView: GameBoardView) {
                 if (e != Element.EMPTY) {
                     val combineFrom = e.combineFrom
                     if (combineFrom != null) {
+                        sequences += Movement(Coord(row, col), Coord(alignRow, col), bumpOnEnd = true)
                         sequences += Movement(
                             Coord(combineFrom.row, combineFrom.col),
                             Coord(alignRow, col),
                             disappearOnEnd = true
                         )
-                        sequences += Movement(Coord(row, col), Coord(alignRow, col), bumpOnEnd = true)
                     } else {
                         sequences += Movement(Coord(row, col), Coord(alignRow, col))
                     }
@@ -199,12 +281,12 @@ class GameBoard(val bindingView: GameBoardView) {
                 if (e != Element.EMPTY) {
                     val combineFrom = e.combineFrom
                     if (combineFrom != null) {
+                        sequences += Movement(Coord(row, col), Coord(alignRow, col), bumpOnEnd = true)
                         sequences += Movement(
                             Coord(combineFrom.row, combineFrom.col),
                             Coord(alignRow, col),
                             disappearOnEnd = true
                         )
-                        sequences += Movement(Coord(row, col), Coord(alignRow, col), bumpOnEnd = true)
                     } else {
                         sequences += Movement(Coord(row, col), Coord(alignRow, col))
                     }

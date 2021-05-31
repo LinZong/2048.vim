@@ -17,6 +17,12 @@ class NumericSquare @JvmOverloads constructor(
 
     private val binding = NumericSquareBinding.bind(View.inflate(context, R.layout.numeric_square, this))
 
+    var value: Int = 2
+        set(value) {
+            field = value
+            setText(value.toString())
+        }
+
     init {
         if (attrs != null) {
             val ta = context.obtainStyledAttributes(attrs, R.styleable.NumericSquare)
