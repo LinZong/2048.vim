@@ -15,20 +15,20 @@ class MainActivity : AppCompatActivity() {
 
         gameBoard = GameBoard(binding.gameBoardView)
         binding.gameBoardView.setDecorView(window.decorView as ViewGroup)
-//        gameBoard.setup()
-//        gameBoard.set(GameBoard.Element(4), Coord(1,1))
-//        gameBoard.set(GameBoard.Element(4), Coord(2,1))
-        val data = arrayOf(
-            arrayOf(2,4,2,4),
-            arrayOf(4,2,4,2),
-            arrayOf(2,4,2,4),
-            arrayOf(4,2,4,2)
-        )
-        for (i in 0 until 4) {
-            for (j in 0 until 4) {
-                if (data[i][j] != -1)
-                    gameBoard.set(GameBoard.Element(data[i][j]), Coord(i, j))
-            }
-        }
+        gameBoard.setup()
+//        gameBoard.set(GameBoard.Element(512), Coord(1,1))
+//        gameBoard.set(GameBoard.Element(512), Coord(128,1))
+//        val data = arrayOf(
+//            arrayOf(128,512,128,512),
+//            arrayOf(512,128,512,128),
+//            arrayOf(128,512,128,512),
+//            arrayOf(512,128,512,128)
+//        )
+//        for (i in 0 until 4) {
+//            for (j in 0 until 4) {
+//                if (data[i][j] != -1)
+//                    gameBoard.set(GameBoard.Element(data[i][j]), Coord(i, j))
+//            }
+//        }
     }
 }

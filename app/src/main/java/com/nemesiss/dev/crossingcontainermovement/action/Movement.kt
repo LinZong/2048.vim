@@ -14,15 +14,16 @@ data class Movement(
         // normal movement actions.
 
         // do what animator do.
-        val e = view[from.row][from.col]
-        if (bumpOnEnd) {
-            e.double()
-        }
+
         if (from != to) {
             if (!disappearOnEnd) {
                 view[to.row][to.col] = view[from.row][from.col]
             }
             view[from.row][from.col] = GameBoard.Element.EMPTY
+        }
+
+        if (bumpOnEnd) {
+            view[to.row][to.col].double()
         }
     }
 }

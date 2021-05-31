@@ -1,14 +1,15 @@
 package com.nemesiss.dev.crossingcontainermovement.view
 
+import android.animation.Animator
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.content.Context
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.util.AttributeSet
 import android.util.Log
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.GridLayout
-import android.widget.Toast
 import androidx.core.view.setMargins
 import com.nemesiss.dev.crossingcontainermovement.GameBoard
 import com.nemesiss.dev.crossingcontainermovement.GameConfig
@@ -20,10 +21,7 @@ import com.nemesiss.dev.crossingcontainermovement.action.Movement
 import com.nemesiss.dev.crossingcontainermovement.model.Coord
 import com.nemesiss.dev.crossingcontainermovement.model.ElementColorTable
 import com.nemesiss.dev.crossingcontainermovement.util.dp2Px
-import com.nemesiss.dev.crossingcontainermovement.view.animator.AnimatorTracker
-import com.nemesiss.dev.crossingcontainermovement.view.animator.BumpAppearAnimator
-import com.nemesiss.dev.crossingcontainermovement.view.animator.BumpCombinationAnimator
-import com.nemesiss.dev.crossingcontainermovement.view.animator.ReparentAnimator
+import com.nemesiss.dev.crossingcontainermovement.view.animator.*
 import kotlin.math.abs
 
 class GameBoardView @JvmOverloads constructor(
@@ -137,7 +135,7 @@ class GameBoardView @JvmOverloads constructor(
         return getChildAt(index) as FrameLayout
     }
 
-    private fun getNumericSquareAt(coord: Coord): NumericElement? {
+    private fun getNumericElementAt(coord: Coord): NumericElement? {
         val container = getContainerAt(coord)
         if (container.childCount == 0) return null
         return container.getChildAt(container.childCount - 1) as? NumericElement
@@ -176,7 +174,7 @@ class GameBoardView @JvmOverloads constructor(
                         error = true
                         Log.e("GB", "At child: ($r, $c), found childCount: ${container.childCount} > 1!!!")
                     }
-                    val ns = getNumericSquareAt(Coord(r, c))
+                    val ns = getNumericElementAt(Coord(r, c))
                     val elem = relatedGameBoard.view[r][c]
                     if (ns == null && elem == GameBoard.Element.EMPTY) {
                         continue
@@ -209,7 +207,7 @@ class GameBoardView @JvmOverloads constructor(
                 is Movement -> {
                     val fromContainer = getContainerAt(action.from)
                     val toContainer = getContainerAt(action.to)
-                    val numericSquare = getNumericSquareAt(action.from) ?: continue
+                    val numericSquare = getNumericElementAt(action.from) ?: continue
                     val r =
                         animatorTracker.track {
                             ReparentAnimator(decorView, numericSquare, fromContainer, toContainer) {
@@ -234,8 +232,29 @@ class GameBoardView @JvmOverloads constructor(
                         .track { BumpAppearAnimator(ns, container) }
                         .start()
                 }
+                is Died -> {
+                    doDied()
+                }
             }
         }
+    }
+
+    private fun doDied() {
+        val colorTable = ElementColorTable.getInstance(context)
+        val animators = arrayListOf<Animator>()
+        for (r in 0 until size) {
+            for (c in 0 until size) {
+                val element = getNumericElementAt(Coord(r, c)) ?: continue
+                val color = RGB(colorTable[element.value])
+                val gray = color.grayscale
+                animators += ObjectAnimator.ofObject(element, "cardBackgroundColor", ColorTypeEvaluator(), color, gray).apply {
+                    duration = GameConfig.DiedAnimation
+                }
+            }
+        }
+        val set = AnimatorSet()
+        set.playTogether(animators)
+        set.start()
     }
 
     private fun bumpView(view: View) {

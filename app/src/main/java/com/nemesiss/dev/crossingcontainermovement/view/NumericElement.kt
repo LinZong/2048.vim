@@ -3,9 +3,7 @@ package com.nemesiss.dev.crossingcontainermovement.view
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.ShapeDrawable
 import android.util.AttributeSet
 import android.view.View
 import android.widget.RelativeLayout
@@ -13,6 +11,7 @@ import com.nemesiss.dev.crossingcontainermovement.R
 import com.nemesiss.dev.crossingcontainermovement.databinding.NumericSquareBinding
 import com.nemesiss.dev.crossingcontainermovement.model.ElementColorTable
 import com.nemesiss.dev.crossingcontainermovement.util.dp2Px
+import com.nemesiss.dev.crossingcontainermovement.view.animator.RGB
 import top.defaults.drawabletoolbox.DrawableBuilder
 import kotlin.math.min
 
@@ -28,7 +27,7 @@ class NumericElement @JvmOverloads constructor(
         set(value) {
             field = value
             setText(value.toString())
-            setCardBackground(roundRectColorDrawable(colorTable[value]))
+            setCardBackgroundColor(RGB(colorTable[value]))
         }
 
     init {
@@ -60,6 +59,10 @@ class NumericElement @JvmOverloads constructor(
 
     fun setCardBackground(d: Drawable) {
         binding.root.background = d
+    }
+
+    fun setCardBackgroundColor(color: RGB) {
+        setCardBackground(roundRectColorDrawable(color.colorValue))
     }
 
     fun getTextColor() = binding.numberTextview.currentTextColor
