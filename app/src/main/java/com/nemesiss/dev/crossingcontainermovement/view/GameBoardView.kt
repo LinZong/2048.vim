@@ -5,10 +5,8 @@ import android.graphics.Color
 import android.util.AttributeSet
 import android.util.Log
 import android.view.*
-import android.view.animation.AnimationUtils
 import android.widget.FrameLayout
 import android.widget.GridLayout
-import androidx.core.view.postDelayed
 import androidx.core.view.setMargins
 import com.nemesiss.dev.crossingcontainermovement.GameBoard
 import com.nemesiss.dev.crossingcontainermovement.GameConfig
@@ -35,6 +33,10 @@ class GameBoardView @JvmOverloads constructor(
             return true
         }
 
+        override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
+
+            return true
+        }
         override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
             if (e1 == null || e2 == null) return true
             if (animatorTracker.runningAnimator > 0) return true
@@ -65,10 +67,6 @@ class GameBoardView @JvmOverloads constructor(
     private val gestureDetector = GestureDetector(context, GestureHandler())
 
     private val animatorTracker = AnimatorTracker()
-
-    private var animating = false
-
-    private var runningAnimator = 0
 
     private lateinit var decorView: ViewGroup
 
@@ -101,26 +99,6 @@ class GameBoardView @JvmOverloads constructor(
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         return gestureDetector.onTouchEvent(event)
     }
-
-//    private fun disableOperations() {
-//        runningAnimator++
-//        animating = true
-//        relatedGameBoard.disabled = true
-//        Log.w("GB", "Disabled. Current Running Animation: $runningAnimator")
-//    }
-//
-//    private fun enableOperations() {
-//        runningAnimator--
-//        Log.w("GB", "Enabling. Current running animation: ${runningAnimator}")
-//        if (runningAnimator <= 0) {
-//            Log.w("GB", "Enabled")
-//            animating = false
-//            relatedGameBoard.disabled = false
-//            requestLayout()
-//            postDelayed(800) { checkConsistency() }
-//            runningAnimator = 0
-//        }
-//    }
 
     private fun resize(oldSize: Int, newSize: Int) {
         when {
@@ -204,26 +182,8 @@ class GameBoardView @JvmOverloads constructor(
                     val fromContainer = getContainerAt(action.from)
                     val toContainer = getContainerAt(action.to)
                     val numericSquare = getNumericSquareAt(action.from) ?: continue
-//                    val reparentAnimator = ReparentAnimator(decorView, numericSquare, fromContainer, toContainer) {
-//                        // TODO BumpAppear on Appearing
-//
-//                        if (!action.disappearOnEnd) {
-//                            toContainer.removeAllViews()
-//                            toContainer.addView(numericSquare)
-//                        }
-//                        if (action.bumpOnEnd) {
-//                            numericSquare.value *= 2
-////                            disableOperations()
-//                            toContainer.post {
-//                                bumpView(numericSquare)
-//                            }
-//                        }
-////                        enableOperations()
-//                    }
-//                    disableOperations()
                     val r =
                         animatorTracker.wrap(ReparentAnimator(decorView, numericSquare, fromContainer, toContainer) {
-                            // TODO BumpAppear on Appearing
                             if (!action.disappearOnEnd) {
                                 toContainer.removeAllViews()
                                 toContainer.addView(numericSquare)

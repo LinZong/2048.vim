@@ -1,11 +1,9 @@
 package com.nemesiss.dev.crossingcontainermovement.view.animator
 
-import android.animation.Animator
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.animation.doOnCancel
 import androidx.core.animation.doOnEnd
 import com.nemesiss.dev.crossingcontainermovement.GameConfig
 
