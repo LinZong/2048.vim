@@ -13,29 +13,16 @@ data class Movement(
     override fun apply(view: GameBoardMap) {
         // normal movement actions.
 
-        // not move the same.
-//        if (from == to) return
-
-        // not move a tomb.
-//        if (from == view[to.row][to.col].combineFrom) return
-        // this will disappear, assign to empty
-//        if (disappearOnEnd) tomb already, return.
-//        view[to.row][to.col] = view[from.row][from.col]
-//        view[from.row][from.col] = GameBoard.Element.EMPTY
-//        if (bumpOnEnd) {
-//            view[to.row][to.col].double()
-//        }
-
-
         // do what animator do.
         val e = view[from.row][from.col]
         if (bumpOnEnd) {
             e.double()
         }
-        if (from == to) return
-        if (!disappearOnEnd) {
-            view[to.row][to.col] = e
+        if (from != to) {
+            if (!disappearOnEnd) {
+                view[to.row][to.col] = view[from.row][from.col]
+            }
+            view[from.row][from.col] = GameBoard.Element.EMPTY
         }
-        view[from.row][from.col] = GameBoard.Element.EMPTY
     }
 }

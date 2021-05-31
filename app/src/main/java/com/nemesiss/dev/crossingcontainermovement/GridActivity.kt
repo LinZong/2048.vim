@@ -14,39 +14,38 @@ import android.widget.FrameLayout.LayoutParams
 import android.widget.GridLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
-import androidx.core.view.children
 import androidx.core.view.get
 import androidx.core.view.setMargins
 import com.nemesiss.dev.crossingcontainermovement.databinding.ActivityGridBinding
-import com.nemesiss.dev.crossingcontainermovement.view.NumericSquare
+import com.nemesiss.dev.crossingcontainermovement.view.NumericElement
 
 class GridActivity : AppCompatActivity(), View.OnClickListener {
 
     private val binding by lazy { ActivityGridBinding.inflate(layoutInflater) }
-    private lateinit var numericSquare: NumericSquare
+    private lateinit var numericElement: NumericElement
     private var moving = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        numericSquare = buildNumericSquare()
-        binding.containerGrid.children.forEach { cv -> cv.setOnClickListener(this) }
-        val child = binding.containerGrid.getChild(1, 1)
-        if (child is ViewGroup) {
-            child.addView(numericSquare)
-        }
-        binding.containerGrid.post {
-            val child = binding.containerGrid.getChild(1,3)
-            println(child.layoutParams)
-        }
+//        numericElement = buildNumericSquare()
+//        binding.containerGrid.children.forEach { cv -> cv.setOnClickListener(this) }
+//        val child = binding.containerGrid.getChild(1, 1)
+//        if (child is ViewGroup) {
+//            child.addView(numericElement)
+//        }
+//        binding.containerGrid.post {
+//            val child = binding.containerGrid.getChild(1,3)
+//            println(child.layoutParams)
+//        }
     }
 
     override fun onClick(v: View?) {
         if (v !is ViewGroup) return
-        val curr = numericSquare.parent as? ViewGroup ?: return
+        val curr = numericElement.parent as? ViewGroup ?: return
         if (moving) return
         moving = true
-        moveToContainer(numericSquare, curr, v)
+        moveToContainer(numericElement, curr, v)
     }
 
     private fun GridLayout.getChild(row: Int, col: Int): View {
@@ -56,8 +55,8 @@ class GridActivity : AppCompatActivity(), View.OnClickListener {
         return get(index)
     }
 
-    private fun buildNumericSquare(): NumericSquare {
-        val ns = NumericSquare(this)
+    private fun buildNumericSquare(): NumericElement {
+        val ns = NumericElement(this)
         ns.setTextColor(Color.WHITE)
         ns.setCardBackground(getDrawable(R.drawable.round_ripple_purple)!!)
         ns.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, Gravity.CENTER)

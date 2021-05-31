@@ -11,7 +11,7 @@ import com.nemesiss.dev.crossingcontainermovement.R
 import com.nemesiss.dev.crossingcontainermovement.databinding.NumericSquareBinding
 import kotlin.math.min
 
-class NumericSquare @JvmOverloads constructor(
+class NumericElement @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : RelativeLayout(context, attrs, defStyleAttr) {
 

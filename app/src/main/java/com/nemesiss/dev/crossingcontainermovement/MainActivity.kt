@@ -18,10 +18,10 @@ class MainActivity : AppCompatActivity() {
 //        gameBoard.set(GameBoard.Element(4), Coord(1,1))
 //        gameBoard.set(GameBoard.Element(4), Coord(2,1))
         val data = arrayOf(
-            arrayOf(-1, -1, -1, -1),
-            arrayOf(-1,-1,-1,-1),
-            arrayOf(-1, -1,2,2),
-            arrayOf(-1,-1,-1,8)
+            arrayOf(2,4,2,4),
+            arrayOf(4,2,4,2),
+            arrayOf(2,4,2,4),
+            arrayOf(4,2,4,2)
         )
         for (i in 0 until 4) {
             for (j in 0 until 4) {

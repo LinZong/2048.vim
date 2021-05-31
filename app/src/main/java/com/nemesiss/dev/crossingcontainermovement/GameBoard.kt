@@ -1,10 +1,7 @@
 package com.nemesiss.dev.crossingcontainermovement
 
 import android.util.Log
-import com.nemesiss.dev.crossingcontainermovement.action.Appear
-import com.nemesiss.dev.crossingcontainermovement.action.Combination
-import com.nemesiss.dev.crossingcontainermovement.action.ElementAction
-import com.nemesiss.dev.crossingcontainermovement.action.Movement
+import com.nemesiss.dev.crossingcontainermovement.action.*
 import com.nemesiss.dev.crossingcontainermovement.model.Coord
 import com.nemesiss.dev.crossingcontainermovement.view.GameBoardView
 import java.util.concurrent.ThreadLocalRandom
@@ -78,6 +75,12 @@ class GameBoard(val bindingView: GameBoardView) {
 
     fun handleGesture(gestureDirection: GestureDirection): List<ElementAction> {
         if (disabled) return emptyList()
+
+        if (checkDied()) {
+            handleDied()
+            return emptyList()
+        }
+
         val mergeActions = when (gestureDirection) {
             GestureDirection.UP -> view.mergeBottomUp()
             GestureDirection.DOWN -> view.mergeTopDown()
@@ -104,10 +107,11 @@ class GameBoard(val bindingView: GameBoardView) {
         if (GameConfig.DEBUG) {
             Log.d(
                 "GB",
-                " $gestureDirection \n" + stringifyGameBoardView(view))
+                " $gestureDirection \n" + stringifyGameBoardView(view)
+            )
             var notTheSame = false
-            for(r in 0 until size) {
-                for(c in 0 until size) {
+            for (r in 0 until size) {
+                for (c in 0 until size) {
                     if (view[r][c] != fakeView[r][c]) {
                         Log.e("GB", "view and fakeView are not the same! at $r $c")
                         notTheSame = true
@@ -127,6 +131,12 @@ class GameBoard(val bindingView: GameBoardView) {
         val actions = randomlyGenerateNewElement(view)
         playActions(actions)
         bindingView.notifyActionsArrived(actions)
+    }
+
+    private fun handleDied() {
+        disabled = true
+        // send died notification.
+        bindingView.notifyActionsArrived(listOf(Died()))
     }
 
     private fun playActions(actions: List<ElementAction>) {
@@ -188,6 +198,24 @@ class GameBoard(val bindingView: GameBoardView) {
             }
         }
         return newView
+    }
+
+    private fun checkDied(): Boolean {
+        if (view.mergeLTR().isNotEmpty()) {
+            return false
+        }
+        if (view.mergeRTL().isNotEmpty()) {
+            return false
+        }
+        if (view.mergeTopDown().isNotEmpty()) {
+            return false
+        }
+        if (view.mergeBottomUp().isNotEmpty()) {
+            return false
+        }
+
+        // no combination. died
+        return true
     }
 
     private fun GameBoardMap.alignmentLTR(): List<ElementAction> {

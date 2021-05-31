@@ -1,5 +1,6 @@
 package com.nemesiss.dev.crossingcontainermovement.view.animator
 
+import android.telecom.Call
 import android.util.Log
 
 class AnimatorTracker {
@@ -34,8 +35,12 @@ class AnimatorTracker {
     var runningAnimator = 0
         private set
 
-    fun wrap(animator: CallbackAnimator): CallbackAnimator {
+    fun track(animator: CallbackAnimator): CallbackAnimator {
         return TrackingWrapper(animator)
+    }
+
+    fun track(block: () -> CallbackAnimator): CallbackAnimator {
+        return TrackingWrapper(block())
     }
 
     @Synchronized

@@ -7,11 +7,13 @@ import android.util.Log
 import android.view.*
 import android.widget.FrameLayout
 import android.widget.GridLayout
+import android.widget.Toast
 import androidx.core.view.setMargins
 import com.nemesiss.dev.crossingcontainermovement.GameBoard
 import com.nemesiss.dev.crossingcontainermovement.GameConfig
 import com.nemesiss.dev.crossingcontainermovement.R
 import com.nemesiss.dev.crossingcontainermovement.action.Appear
+import com.nemesiss.dev.crossingcontainermovement.action.Died
 import com.nemesiss.dev.crossingcontainermovement.action.ElementAction
 import com.nemesiss.dev.crossingcontainermovement.action.Movement
 import com.nemesiss.dev.crossingcontainermovement.model.Coord
@@ -29,20 +31,42 @@ class GameBoardView @JvmOverloads constructor(
     private inner class GestureHandler : GestureDetector.SimpleOnGestureListener() {
         private val TAG = "GestureHandler"
         private val scrollThreshold = 150
+        private val velocityThreshold = 1500
         override fun onDown(e: MotionEvent?): Boolean {
             return true
         }
 
         override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
+            Log.w(TAG, "VX: ${velocityX}, VY: ${velocityY}")
+            if (animatorTracker.runningAnimator > 0) return true
+            if (abs(velocityY) >= velocityThreshold) {
+                if (velocityY > 0) {
+                    relatedGameBoard.handleGesture(GameBoard.GestureDirection.DOWN)
+                } else {
+                    relatedGameBoard.handleGesture(GameBoard.GestureDirection.UP)
+                }
+                return true
+            }
 
+            if (abs(velocityX) >= velocityThreshold) {
+                if (velocityX > 0) {
+                    relatedGameBoard.handleGesture(GameBoard.GestureDirection.RIGHT)
+                } else {
+                    relatedGameBoard.handleGesture(GameBoard.GestureDirection.LEFT)
+                }
+                return true
+            }
+            // otherwise
             return true
         }
+
         override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
             if (e1 == null || e2 == null) return true
             if (animatorTracker.runningAnimator > 0) return true
 
             val deltaY = e2.rawY - e1.rawY
             if (abs(deltaY) >= scrollThreshold) {
+                Log.w(TAG, "onScroll, handleY")
                 if (deltaY > 0) {
                     relatedGameBoard.handleGesture(GameBoard.GestureDirection.DOWN)
                 } else {
@@ -53,6 +77,7 @@ class GameBoardView @JvmOverloads constructor(
 
             val deltaX = e2.rawX - e1.rawX
             if (abs(deltaX) >= scrollThreshold) {
+                Log.w(TAG, "onScroll, handleX")
                 if (deltaX > 0) {
                     relatedGameBoard.handleGesture(GameBoard.GestureDirection.RIGHT)
                 } else {
@@ -107,7 +132,7 @@ class GameBoardView @JvmOverloads constructor(
                 // increase
                 for (r in oldSize until newSize) {
                     for (c in oldSize until newSize) {
-                        addView(buildCardContainer(Coord(r, c)))
+                        addView(buildNumericContainer(Coord(r, c)))
                     }
                 }
             }
@@ -132,10 +157,10 @@ class GameBoardView @JvmOverloads constructor(
         return getChildAt(index) as FrameLayout
     }
 
-    private fun getNumericSquareAt(coord: Coord): NumericSquare? {
+    private fun getNumericSquareAt(coord: Coord): NumericElement? {
         val container = getContainerAt(coord)
         if (container.childCount == 0) return null
-        return container.getChildAt(container.childCount - 1) as? NumericSquare
+        return container.getChildAt(container.childCount - 1) as? NumericElement
     }
 
     private fun checkConsistency() {
@@ -183,37 +208,42 @@ class GameBoardView @JvmOverloads constructor(
                     val toContainer = getContainerAt(action.to)
                     val numericSquare = getNumericSquareAt(action.from) ?: continue
                     val r =
-                        animatorTracker.wrap(ReparentAnimator(decorView, numericSquare, fromContainer, toContainer) {
-                            if (!action.disappearOnEnd) {
-                                toContainer.removeAllViews()
-                                toContainer.addView(numericSquare)
+                        animatorTracker.track {
+                            ReparentAnimator(decorView, numericSquare, fromContainer, toContainer) {
+                                if (!action.disappearOnEnd) {
+                                    toContainer.removeAllViews()
+                                    toContainer.addView(numericSquare)
+                                }
+                                if (action.bumpOnEnd) {
+                                    numericSquare.value *= 2
+                                    toContainer.post { bumpView(numericSquare) }
+                                }
                             }
-                            if (action.bumpOnEnd) {
-                                numericSquare.value *= 2
-                                toContainer.post { bumpView(numericSquare) }
-                            }
-                        })
+                        }
                     r.start()
                 }
                 is Appear -> {
                     val container = getContainerAt(action.coord)
                     container.removeAllViews()
 
-                    val ns = buildNumericSquare(action.element)
-                    animatorTracker.wrap(BumpAppearAnimator(ns, container))
+                    val ns = buildNumericElement(action.element)
+                    animatorTracker
+                        .track { BumpAppearAnimator(ns, container) }
                         .start()
+                }
+                is Died -> {
+                    Toast.makeText(context, "You are died!", Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
 
     private fun bumpView(view: View) {
-        val bca = BumpCombinationAnimator(decorView, view)
-        animatorTracker.wrap(bca).start()
+        animatorTracker.track { BumpCombinationAnimator(decorView, view) }.start()
     }
 
-    private fun buildNumericSquare(element: GameBoard.Element): NumericSquare {
-        val ns = NumericSquare(context)
+    private fun buildNumericElement(element: GameBoard.Element): NumericElement {
+        val ns = NumericElement(context)
         ns.setTextColor(Color.WHITE)
         ns.setCardBackground(context.getDrawable(R.drawable.round_ripple_purple)!!)
         ns.layoutParams = FrameLayout.LayoutParams(
@@ -231,7 +261,7 @@ class GameBoardView @JvmOverloads constructor(
         return ns
     }
 
-    private fun buildCardContainer(coord: Coord): FrameLayout {
+    private fun buildNumericContainer(coord: Coord): FrameLayout {
         val fl = FrameLayout(context)
         fl.elevation = dp2Px(2).toFloat()
         // set layout_width and layout_height
