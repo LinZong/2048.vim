@@ -1,4 +1,4 @@
-package com.nemesiss.dev.crossingcontainermovement.view.animator
+package com.nemesiss.dev.crossingcontainermovement.view.animator.typeevaluator
 
 import android.animation.TypeEvaluator
 
@@ -23,8 +23,8 @@ class RGB {
 
     val grayscale: RGB
         get() {
-            val g = (r * 19595 + g * 38469 + b * 7472) shr 16
-            return RGB(g, g, g)
+            val gray = (r * 19595 + g * 38469 + b * 7472) shr 16
+            return RGB(gray, gray, gray)
         }
 }
 

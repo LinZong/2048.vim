@@ -16,8 +16,9 @@ class MainActivity : AppCompatActivity() {
         gameBoard = GameBoard(binding.gameBoardView)
         binding.gameBoardView.setDecorView(window.decorView as ViewGroup)
         gameBoard.setup()
-//        gameBoard.set(GameBoard.Element(512), Coord(1,1))
-//        gameBoard.set(GameBoard.Element(512), Coord(128,1))
+
+        binding.reset.setOnClickListener { gameBoard.reset() }
+//
 //        val data = arrayOf(
 //            arrayOf(128,512,128,512),
 //            arrayOf(512,128,512,128),

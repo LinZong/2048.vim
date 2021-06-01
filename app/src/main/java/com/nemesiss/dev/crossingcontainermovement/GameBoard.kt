@@ -5,6 +5,8 @@ import com.nemesiss.dev.crossingcontainermovement.action.*
 import com.nemesiss.dev.crossingcontainermovement.model.Coord
 import com.nemesiss.dev.crossingcontainermovement.view.GameBoardView
 import java.util.concurrent.ThreadLocalRandom
+import kotlin.math.max
+import kotlin.math.min
 
 
 typealias GameBoardMap = Array<Array<GameBoard.Element>>
@@ -28,8 +30,11 @@ class GameBoard(val bindingView: GameBoardView) {
 
     data class Element(var value: Int, var combineFrom: Coord? = null) {
         companion object {
-            @JvmStatic
+            @JvmField
             val EMPTY = Element(-1)
+
+            @JvmField
+            val DISABLED = Element(-2)
         }
 
         fun double() {
@@ -50,10 +55,15 @@ class GameBoard(val bindingView: GameBoardView) {
     var view: GameBoardMap = newViewOf(size)
         private set
 
+    fun set(elements: List<Pair<Element, Coord>>) {
+        val appears = elements.map { (element, coord) -> Appear(coord, element) }
+        playActions(appears)
+        bindingView.notifyActionsArrived(appears)
+    }
+
     fun set(element: Element, coord: Coord) {
-        val (row, col) = coord
-        view[row][col] = element
-        bindingView.notifyActionsArrived(listOf(Appear(coord, element)))
+        val appear = listOf(element to coord)
+        set(appear)
     }
 
     fun get(coord: Coord): Element {
@@ -61,6 +71,21 @@ class GameBoard(val bindingView: GameBoardView) {
         return view[row][col]
     }
 
+    fun setup() {
+        val actions = randomlyGenerateNewElement(view, emptyList())
+        playActions(actions)
+        bindingView.notifyActionsArrived(actions)
+    }
+
+    fun reset() {
+        clear()
+        setup()
+    }
+
+    fun clear() {
+        playActions(listOf(Reset))
+        bindingView.notifyActionArrived(Reset)
+    }
 
     fun handleGesture(gestureDirection: GestureDirection): List<ElementAction> {
         if (disabled) return emptyList()
@@ -83,7 +108,7 @@ class GameBoard(val bindingView: GameBoardView) {
             val alignmentActions = handleAlignment(mergedView, gestureDirection)
             playActions(mergedView, alignmentActions)
 
-            val generateActions = randomlyGenerateNewElement(mergedView)
+            val generateActions = randomlyGenerateNewElement(mergedView, alignmentActions)
             playActions(mergedView, generateActions)
 
             val finalActions = alignmentActions + generateActions
@@ -139,15 +164,10 @@ class GameBoard(val bindingView: GameBoardView) {
         playActions(newView, mergeActions)
         val alignment = handleAlignment(newView, direction)
         playActions(newView, alignment)
-        val generate = randomlyGenerateNewElement(newView)
+        val generate = randomlyGenerateNewElement(newView, alignment)
         return alignment + generate
     }
 
-    fun setup() {
-        val actions = randomlyGenerateNewElement(view)
-        playActions(actions)
-        bindingView.notifyActionsArrived(actions)
-    }
 
     private fun handleDied(): List<ElementAction> {
         disabled = true
@@ -157,30 +177,48 @@ class GameBoard(val bindingView: GameBoardView) {
         return action
     }
 
-    private fun randomlyGenerateNewElement(gameBoardMap: GameBoardMap): List<Appear> {
+    private fun randomlyGenerateNewElement(gameBoardMap: GameBoardMap, alignmentActions: List<Movement>): List<Appear> {
+        val map = cloneView(gameBoardMap)
+        // 标记所有Movement路径的沿途所有点。保证后续随机生成方块的时候不生成在沿途路径上。
+        markAlignmentPaths(map, alignmentActions)
+
         val freeCoords = arrayListOf<Coord>()
-        val size = gameBoardMap.size
+        val size = map.size
         for (i in 0 until size) {
             for (j in 0 until size) {
-                if (gameBoardMap[i][j] == Element.EMPTY) {
+                if (map[i][j] == Element.EMPTY) {
                     freeCoords += Coord(i, j)
                 }
             }
         }
-        Log.d("GB", "NewElementGenerator See: \n ${stringifyGameBoardView(gameBoardMap)}")
+        Log.d("GB", "NewElementGenerator See: \n ${stringifyGameBoardView(map)}")
         return Array(1) { freeCoords.randomOrNull() }
             .filterNotNull()
             .map { c -> Appear(c, Element(random2Or4())) }
     }
 
+    private fun markAlignmentPaths(map: GameBoardMap, alignmentActions: List<Movement>): GameBoardMap {
+        for (alignment in alignmentActions) {
+            val from = alignment.from
+            val to = alignment.to
 
-    private fun handleAlignment(view: GameBoardMap, direction: GestureDirection): List<ElementAction> {
-        return when (direction) {
-            GestureDirection.UP -> view.alignmentBottomUp()
-            GestureDirection.DOWN -> view.alignmentTopDown()
-            GestureDirection.LEFT -> view.alignmentRTL()
-            GestureDirection.RIGHT -> view.alignmentLTR()
+            val rowRange = min(from.row, to.row)..max(from.row, to.row)
+            val colRange = min(from.col, to.col)..max(from.col, to.col)
+
+            for (r in rowRange) {
+                for (c in colRange) {
+                    map[r][c] = Element.DISABLED
+                }
+            }
         }
+        return map
+    }
+
+    private fun handleAlignment(view: GameBoardMap, direction: GestureDirection) = when (direction) {
+        GestureDirection.UP -> view.alignmentBottomUp()
+        GestureDirection.DOWN -> view.alignmentTopDown()
+        GestureDirection.LEFT -> view.alignmentRTL()
+        GestureDirection.RIGHT -> view.alignmentLTR()
     }
 
 
@@ -193,6 +231,7 @@ class GameBoard(val bindingView: GameBoardView) {
                     is Combination -> false
                     is Died -> false
                     is Movement -> action.from != action.to
+                    is Reset -> false
                 }
             }
             if (actions.isNotEmpty()) return false
@@ -201,7 +240,7 @@ class GameBoard(val bindingView: GameBoardView) {
     }
 
 
-    private fun playActions(actions: List<ElementAction>) {
+    fun playActions(actions: List<ElementAction>) {
         playActions(view, actions)
     }
 
@@ -213,8 +252,8 @@ class GameBoard(val bindingView: GameBoardView) {
 
     // ============= Action Generators =============
 
-    private fun GameBoardMap.alignmentLTR(): List<ElementAction> {
-        val sequences = arrayListOf<ElementAction>()
+    private fun GameBoardMap.alignmentLTR(): List<Movement> {
+        val sequences = arrayListOf<Movement>()
         for (row in 0 until size) {
             var alignCol = size - 1
             var col = size - 1
@@ -240,8 +279,8 @@ class GameBoard(val bindingView: GameBoardView) {
         return sequences
     }
 
-    private fun GameBoardMap.alignmentRTL(): List<ElementAction> {
-        val sequences = arrayListOf<ElementAction>()
+    private fun GameBoardMap.alignmentRTL(): List<Movement> {
+        val sequences = arrayListOf<Movement>()
         for (row in 0 until size) {
             var alignCol = 0
             var col = 0
@@ -267,8 +306,8 @@ class GameBoard(val bindingView: GameBoardView) {
         return sequences
     }
 
-    private fun GameBoardMap.alignmentTopDown(): List<ElementAction> {
-        val sequences = arrayListOf<ElementAction>()
+    private fun GameBoardMap.alignmentTopDown(): List<Movement> {
+        val sequences = arrayListOf<Movement>()
         for (col in 0 until size) {
             var alignRow = size - 1
             var row = size - 1
@@ -294,8 +333,8 @@ class GameBoard(val bindingView: GameBoardView) {
         return sequences
     }
 
-    private fun GameBoardMap.alignmentBottomUp(): List<ElementAction> {
-        val sequences = arrayListOf<ElementAction>()
+    private fun GameBoardMap.alignmentBottomUp(): List<Movement> {
+        val sequences = arrayListOf<Movement>()
         for (col in 0 until size) {
             var alignRow = 0
             var row = 0

@@ -14,14 +14,13 @@ import androidx.core.view.setMargins
 import com.nemesiss.dev.crossingcontainermovement.GameBoard
 import com.nemesiss.dev.crossingcontainermovement.GameConfig
 import com.nemesiss.dev.crossingcontainermovement.R
-import com.nemesiss.dev.crossingcontainermovement.action.Appear
-import com.nemesiss.dev.crossingcontainermovement.action.Died
-import com.nemesiss.dev.crossingcontainermovement.action.ElementAction
-import com.nemesiss.dev.crossingcontainermovement.action.Movement
+import com.nemesiss.dev.crossingcontainermovement.action.*
 import com.nemesiss.dev.crossingcontainermovement.model.Coord
 import com.nemesiss.dev.crossingcontainermovement.model.ElementColorTable
 import com.nemesiss.dev.crossingcontainermovement.util.dp2Px
 import com.nemesiss.dev.crossingcontainermovement.view.animator.*
+import com.nemesiss.dev.crossingcontainermovement.view.animator.typeevaluator.ColorTypeEvaluator
+import com.nemesiss.dev.crossingcontainermovement.view.animator.typeevaluator.RGB
 import kotlin.math.abs
 
 class GameBoardView @JvmOverloads constructor(
@@ -126,6 +125,10 @@ class GameBoardView @JvmOverloads constructor(
     }
 
 
+    fun notifyActionArrived(action: ElementAction) {
+        notifyActionsArrived(listOf(action))
+    }
+
     fun notifyActionsArrived(actions: List<ElementAction>) {
         executeActions(actions)
     }
@@ -205,36 +208,55 @@ class GameBoardView @JvmOverloads constructor(
         for (action in actions) {
             when (action) {
                 is Movement -> {
-                    val fromContainer = getContainerAt(action.from)
-                    val toContainer = getContainerAt(action.to)
-                    val numericSquare = getNumericElementAt(action.from) ?: continue
-                    val r =
-                        animatorTracker.track {
-                            ReparentAnimator(decorView, numericSquare, fromContainer, toContainer) {
-                                if (!action.disappearOnEnd) {
-                                    toContainer.removeAllViews()
-                                    toContainer.addView(numericSquare)
-                                }
-                                if (action.bumpOnEnd) {
-                                    numericSquare.value *= 2
-                                    toContainer.post { bumpView(numericSquare) }
-                                }
-                            }
-                        }
-                    r.start()
+                    doMovement(action)
                 }
                 is Appear -> {
-                    val container = getContainerAt(action.coord)
-                    container.removeAllViews()
-
-                    val ns = buildNumericElement(action.element)
-                    animatorTracker
-                        .track { BumpAppearAnimator(ns, container) }
-                        .start()
+                    doAppear(action)
                 }
                 is Died -> {
                     doDied()
                 }
+                is Reset -> {
+                    doReset()
+                }
+            }
+        }
+    }
+
+    private fun doMovement(action: Movement) {
+        val fromContainer = getContainerAt(action.from)
+        val toContainer = getContainerAt(action.to)
+        val numericSquare = getNumericElementAt(action.from) ?: return
+        val r =
+            animatorTracker.track {
+                ReparentAnimator(decorView, numericSquare, fromContainer, toContainer) {
+                    if (!action.disappearOnEnd) {
+                        toContainer.removeAllViews()
+                        toContainer.addView(numericSquare)
+                    }
+                    if (action.bumpOnEnd) {
+                        numericSquare.value *= 2
+                        toContainer.post { bumpView(numericSquare) }
+                    }
+                }
+            }
+        r.start()
+    }
+
+    private fun doAppear(action: Appear) {
+        val container = getContainerAt(action.coord)
+        container.removeAllViews()
+
+        val ns = buildNumericElement(action.element)
+        animatorTracker
+            .track { BumpAppearAnimator(ns, container) }
+            .start()
+    }
+
+    private fun doReset() {
+        for (r in 0 until size) {
+            for (c in 0 until size) {
+                getContainerAt(Coord(r, c)).removeAllViews()
             }
         }
     }
@@ -247,9 +269,10 @@ class GameBoardView @JvmOverloads constructor(
                 val element = getNumericElementAt(Coord(r, c)) ?: continue
                 val color = RGB(colorTable[element.value])
                 val gray = color.grayscale
-                animators += ObjectAnimator.ofObject(element, "cardBackgroundColor", ColorTypeEvaluator(), color, gray).apply {
-                    duration = GameConfig.DiedAnimation
-                }
+                animators += ObjectAnimator.ofObject(element, "cardBackgroundColor", ColorTypeEvaluator(), color, gray)
+                    .apply {
+                        duration = GameConfig.DiedAnimation
+                    }
             }
         }
         val set = AnimatorSet()

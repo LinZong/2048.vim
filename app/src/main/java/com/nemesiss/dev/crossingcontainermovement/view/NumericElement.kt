@@ -11,7 +11,7 @@ import com.nemesiss.dev.crossingcontainermovement.R
 import com.nemesiss.dev.crossingcontainermovement.databinding.NumericSquareBinding
 import com.nemesiss.dev.crossingcontainermovement.model.ElementColorTable
 import com.nemesiss.dev.crossingcontainermovement.util.dp2Px
-import com.nemesiss.dev.crossingcontainermovement.view.animator.RGB
+import com.nemesiss.dev.crossingcontainermovement.view.animator.typeevaluator.RGB
 import top.defaults.drawabletoolbox.DrawableBuilder
 import kotlin.math.min
 
