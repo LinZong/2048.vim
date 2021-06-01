@@ -18,18 +18,5 @@ class MainActivity : AppCompatActivity() {
         gameBoard.setup()
 
         binding.reset.setOnClickListener { gameBoard.reset() }
-//
-//        val data = arrayOf(
-//            arrayOf(128,512,128,512),
-//            arrayOf(512,128,512,128),
-//            arrayOf(128,512,128,512),
-//            arrayOf(512,128,512,128)
-//        )
-//        for (i in 0 until 4) {
-//            for (j in 0 until 4) {
-//                if (data[i][j] != -1)
-//                    gameBoard.set(GameBoard.Element(data[i][j]), Coord(i, j))
-//            }
-//        }
     }
 }
