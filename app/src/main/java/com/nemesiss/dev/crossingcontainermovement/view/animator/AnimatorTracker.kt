@@ -1,6 +1,5 @@
 package com.nemesiss.dev.crossingcontainermovement.view.animator
 
-import android.telecom.Call
 import android.util.Log
 
 class AnimatorTracker {

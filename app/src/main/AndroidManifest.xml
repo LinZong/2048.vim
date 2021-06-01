@@ -4,14 +4,12 @@
 
     <application
             android:allowBackup="true"
+            android:name=".GameApplication"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
             android:roundIcon="@mipmap/ic_launcher_round"
-            android:supportsRtl="true"
+            android:supportsRtl="false"
             android:theme="@style/Theme.CrossingContainerMovement">
-        <activity android:name=".GridActivity">
-
-        </activity>
         <activity android:name=".MainActivity" android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

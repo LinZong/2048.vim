@@ -12,14 +12,19 @@ import com.nemesiss.dev.crossingcontainermovement.databinding.NumericSquareBindi
 import com.nemesiss.dev.crossingcontainermovement.model.ElementColorTable
 import com.nemesiss.dev.crossingcontainermovement.util.dp2Px
 import com.nemesiss.dev.crossingcontainermovement.view.animator.typeevaluator.RGB
+import dagger.hilt.android.AndroidEntryPoint
 import top.defaults.drawabletoolbox.DrawableBuilder
+import javax.inject.Inject
 import kotlin.math.min
 
+@AndroidEntryPoint
 class NumericElement @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : RelativeLayout(context, attrs, defStyleAttr) {
 
-    private val colorTable = ElementColorTable.getInstance(context)
+
+    @Inject
+    lateinit var colorTable: ElementColorTable
 
     private val binding = NumericSquareBinding.bind(View.inflate(context, R.layout.numeric_square, this))
 

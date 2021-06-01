@@ -3,6 +3,7 @@ package com.nemesiss.dev.crossingcontainermovement.action
 import com.nemesiss.dev.crossingcontainermovement.GameBoard
 import com.nemesiss.dev.crossingcontainermovement.GameBoardMap
 import com.nemesiss.dev.crossingcontainermovement.model.Coord
+import com.nemesiss.dev.crossingcontainermovement.view.GameBoardView
 
 data class Movement(
     val from: Coord,
@@ -10,20 +11,28 @@ data class Movement(
     var disappearOnEnd: Boolean = false,
     var bumpOnEnd: Boolean = false
 ) : ElementAction {
-    override fun apply(view: GameBoardMap) {
+    override fun apply(map: GameBoardMap) {
         // normal movement actions.
 
         // do what animator do.
 
         if (from != to) {
             if (!disappearOnEnd) {
-                view[to.row][to.col] = view[from.row][from.col]
+                map[to.row][to.col] = map[from.row][from.col]
             }
-            view[from.row][from.col] = GameBoard.Element.EMPTY
+            map[from.row][from.col] = GameBoard.Element.EMPTY
         }
 
         if (bumpOnEnd) {
-            view[to.row][to.col].double()
+            map[to.row][to.col].double()
         }
+    }
+
+    override fun apply(view: GameBoardView) {
+        view.doMovement(this)
+    }
+
+    override fun hasVisibilityChanges(): Boolean {
+        return true
     }
 }

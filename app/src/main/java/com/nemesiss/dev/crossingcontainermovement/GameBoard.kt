@@ -48,8 +48,6 @@ class GameBoard(val bindingView: GameBoardView) {
         bindingView.relatedGameBoard = this
     }
 
-    var disabled = false
-
     private val size = bindingView.size
 
     var view: GameBoardMap = newViewOf(size)
@@ -88,69 +86,15 @@ class GameBoard(val bindingView: GameBoardView) {
     }
 
     fun handleGesture(gestureDirection: GestureDirection): List<ElementAction> {
-        if (disabled) return emptyList()
         if (checkDied()) {
             return handleDied()
         }
-        if (!GameConfig.ComputeAction) {
-            val mergeActions = when (gestureDirection) {
-                GestureDirection.UP -> view.mergeBottomUp()
-                GestureDirection.DOWN -> view.mergeTopDown()
-                GestureDirection.LEFT -> view.mergeRTL()
-                GestureDirection.RIGHT -> view.mergeLTR()
-            }
-            val fakeView = cloneView()
-            val mergedView = cloneView()
-            playActions(mergedView, mergeActions)
-
-            // 此时newView携带了合并信息
-            // 再调用handleAlignment生成最终的指令序列
-            val alignmentActions = handleAlignment(mergedView, gestureDirection)
-            playActions(mergedView, alignmentActions)
-
-            val generateActions = randomlyGenerateNewElement(mergedView, alignmentActions)
-            playActions(mergedView, generateActions)
-
-            val finalActions = alignmentActions + generateActions
-
-            if (finalActions.isEmpty()) {
-                handleDied()
-                return emptyList()
-            }
-
-            bindingView.notifyActionsArrived(finalActions)
-            playActions(fakeView, finalActions)
-            view = cloneView(mergedView, true)
-
-            if (GameConfig.DEBUG) {
-                Log.d(
-                    "GB",
-                    " $gestureDirection \n" + stringifyGameBoardView(view)
-                )
-                var notTheSame = false
-                for (r in 0 until size) {
-                    for (c in 0 until size) {
-                        if (view[r][c] != fakeView[r][c]) {
-                            Log.e("GB", "view and fakeView are not the same! at $r $c")
-                            notTheSame = true
-                        }
-                    }
-                }
-                if (notTheSame) {
-                    Log.e("GB", "NotTheSame \n ${stringifyGameBoardView(fakeView)}")
-                } else {
-                    Log.d("GB", "GameBoardMap check passed!")
-                }
-            }
-            return finalActions
-        } else {
-            val actions = computeActions(gestureDirection)
-            val newView = cloneView()
-            playActions(newView, actions)
-            view = newView
-            bindingView.notifyActionsArrived(actions)
-            return actions
-        }
+        val actions = computeActions(gestureDirection)
+        val newView = cloneView()
+        playActions(newView, actions)
+        view = newView
+        bindingView.notifyActionsArrived(actions)
+        return actions
     }
 
     private fun computeActions(direction: GestureDirection): List<ElementAction> {
@@ -170,9 +114,8 @@ class GameBoard(val bindingView: GameBoardView) {
 
 
     private fun handleDied(): List<ElementAction> {
-        disabled = true
         // send died notification.
-        val action = listOf(Died())
+        val action = listOf(Died)
         bindingView.notifyActionsArrived(action)
         return action
     }

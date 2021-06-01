@@ -13,6 +13,7 @@ fun Context.dp2Px(dp: Int): Int {
         )
         .toInt()
 }
+
 fun View.dp2Px(dp: Int): Int {
     return context.dp2Px(dp)
 }
