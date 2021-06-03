@@ -177,7 +177,7 @@ class GameBoardView @JvmOverloads constructor(
                         // here we have to hold another lock to prevent any unintended movement
                         // in such a layout cycle between this animation end and bump animation start.
                         animatorTracker.increase()
-                        bumpView(numericSquare)
+                        toContainer.post { bumpView(numericSquare) }
                     }
                 }
             }
@@ -211,7 +211,8 @@ class GameBoardView @JvmOverloads constructor(
                 val element = getNumericElementAt(Coord(r, c)) ?: continue
                 val color = RGB(colorTable[element.value])
                 val gray = color.grayscale
-                animators += ObjectAnimator.ofObject(element, "cardBackgroundColor", ColorTypeEvaluator(), color, gray)
+                animators += ObjectAnimator
+                    .ofObject(element, "cardBackgroundColor", ColorTypeEvaluator(), color, gray)
                     .apply {
                         duration = GameConfig.DiedAnimation
                     }
