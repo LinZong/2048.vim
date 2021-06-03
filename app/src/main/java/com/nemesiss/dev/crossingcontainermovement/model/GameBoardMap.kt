@@ -19,7 +19,8 @@ class GameBoardMap() : Parcelable {
 
     constructor(parcel: Parcel) : this() {
         this.size = parcel.readInt()
-        map = Array(size) { Array(size) { GameBoard.Element.EMPTY } }
+        // here cannot use [Element.EMPTY], it will cause all elements are referenced to one object.
+        map = Array(size) { Array(size) { GameBoard.Element(0) } }
         for (row in map) {
             for (col in row) {
                 col.value = parcel.readInt()
@@ -52,7 +53,9 @@ class GameBoardMap() : Parcelable {
 
     operator fun get(index: Int): Array<GameBoard.Element> = map[index]
 
-    operator fun set(index: Int, value: Array<GameBoard.Element>) { map[index] = value }
+    operator fun set(index: Int, value: Array<GameBoard.Element>) {
+        map[index] = value
+    }
 
     val indices get() = map.indices
 }

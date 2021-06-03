@@ -2,7 +2,6 @@ package com.nemesiss.dev.crossingcontainermovement.hilt
 
 import android.content.Context
 import com.nemesiss.dev.crossingcontainermovement.model.ElementColorTable
-import com.tencent.mmkv.MMKV
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,7 +17,4 @@ class GameModule {
     @Singleton
     fun colorTable(@ApplicationContext context: Context) = ElementColorTable.getInstance(context)
 
-    @Provides
-    @Singleton
-    fun mmkv() = MMKV.defaultMMKV()!!
 }

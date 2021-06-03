@@ -5,4 +5,6 @@
     <string name="exit">Exit</string>
     <string name="reset">Reset</string>
 
+    <string name="savedata_broken_hint">Saved map is broken, start a new game instead.</string>
+
 </resources>

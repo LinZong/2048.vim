@@ -2,10 +2,11 @@ package com.nemesiss.dev.crossingcontainermovement
 
 import android.util.Log
 import com.nemesiss.dev.crossingcontainermovement.action.*
+import com.nemesiss.dev.crossingcontainermovement.manager.SaveDataManager
 import com.nemesiss.dev.crossingcontainermovement.model.Coord
 import com.nemesiss.dev.crossingcontainermovement.model.GameBoardMap
-import com.nemesiss.dev.crossingcontainermovement.util.NO_OP
 import com.nemesiss.dev.crossingcontainermovement.view.GameBoardView
+import kotlinx.coroutines.ObsoleteCoroutinesApi
 import java.util.concurrent.ThreadLocalRandom
 import kotlin.math.max
 import kotlin.math.min
@@ -15,9 +16,11 @@ import kotlin.math.min
  * Control flow:
  * GameBoardView receives gesture -> notify GameBoard with action -> GameBoard calculates movement sequences -> GameBoardView applies.
  */
+@ObsoleteCoroutinesApi
 class GameBoard(val bindingView: GameBoardView) {
 
     companion object {
+        private const val TAG = "GameBoard"
         fun newViewOf(size: Int) = GameBoardMap(size)
     }
 
@@ -48,12 +51,15 @@ class GameBoard(val bindingView: GameBoardView) {
         bindingView.relatedGameBoard = this
     }
 
+    private val saver = SaveDataManager.INSTANCE
+
     private val size = bindingView.size
 
     var view: GameBoardMap = newViewOf(size)
         private set
 
     fun set(elements: List<Pair<Element, Coord>>) {
+
         val appears = elements.map { (element, coord) -> Appear(coord, element) }
         playActions(appears)
         bindingView.notifyActionsArrived(appears)
@@ -64,20 +70,37 @@ class GameBoard(val bindingView: GameBoardView) {
         set(appear)
     }
 
+    fun set(map: GameBoardMap) {
+        clear()
+        this.view = map
+        // find elements in new map
+        val appears = arrayListOf<Appear>()
+        for (r in map.indices) {
+            for (c in map[r].indices) {
+                if (map[r][c] != Element.EMPTY && map[r][c] != Element.DISABLED) {
+                    appears += Appear(Coord(r, c), map[r][c])
+                }
+            }
+        }
+        // apply appearance in GameBoardView
+        bindingView.notifyActionsArrived(appears)
+    }
+
     fun get(coord: Coord): Element {
         val (row, col) = coord
         return view[row][col]
     }
 
-    fun setup() {
-        val actions = randomlyGenerateNewElement(view, emptyList())
-        playActions(actions)
-        bindingView.notifyActionsArrived(actions)
-    }
-
     fun reset() {
         clear()
         setup()
+    }
+
+    fun setup() {
+        val actions = randomlyGenerateNewElement(view, emptyList())
+        playActions(actions)
+        saver.saveGameMap(view)
+        bindingView.notifyActionsArrived(actions)
     }
 
     fun clear() {
@@ -92,6 +115,7 @@ class GameBoard(val bindingView: GameBoardView) {
         val actions = computeActions(gestureDirection)
         val newView = cloneView()
         playActions(newView, actions)
+        saver.saveGameMap(newView)
         view = newView
         bindingView.notifyActionsArrived(actions)
         return actions
@@ -134,7 +158,7 @@ class GameBoard(val bindingView: GameBoardView) {
                 }
             }
         }
-        Log.d("GB", "NewElementGenerator See: \n ${stringifyGameBoardView(map)}")
+        Log.d(TAG, "NewElementGenerator See: \n ${stringifyGameBoardView(map)}")
         return Array(1) { freeCoords.randomOrNull() }
             .filterNotNull()
             .map { c -> Appear(c, Element(random2Or4())) }
