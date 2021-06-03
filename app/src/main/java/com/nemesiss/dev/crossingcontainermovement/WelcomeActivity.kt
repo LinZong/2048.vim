@@ -50,4 +50,8 @@ class WelcomeActivity : AppCompatActivity() {
         resumeIntent.action = "Resume"
         startActivity(resumeIntent)
     }
+
+    fun aboutGame(view: View) {
+        startActivity(Intent(this, AboutActivity::class.java))
+    }
 }

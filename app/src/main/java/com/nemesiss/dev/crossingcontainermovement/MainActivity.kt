@@ -11,7 +11,9 @@ import com.nemesiss.dev.crossingcontainermovement.manager.SaveDataManager
 import com.nemesiss.dev.crossingcontainermovement.model.Coord
 import com.nemesiss.dev.crossingcontainermovement.util.NO_OP
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.ObsoleteCoroutinesApi
 
+@ObsoleteCoroutinesApi
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
@@ -42,16 +44,6 @@ class MainActivity : AppCompatActivity() {
             gameBoard.setup()
         }
 
-//        setup()
-
-//        val fakeMap = arrayOf(
-//            arrayOf(2, 4, 2, 4),
-//            arrayOf(4, 2, 4, 2),
-//            arrayOf(2, 4, 2, 4),
-//            arrayOf(4, 2, 4, 2)
-//        )
-//
-//        fakeSetup(fakeMap)
 
     }
 

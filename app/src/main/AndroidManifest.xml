@@ -12,9 +12,15 @@
             android:supportsRtl="false"
             android:theme="@style/Theme.CrossingContainerMovement"
             tools:replace="android:supportsRtl">
-        <activity android:name=".WelcomeActivity" android:theme="@style/Theme.WelcomeActivity">
+        <activity android:name=".AboutActivity"
+                  android:theme="@style/Theme.WelcomeActivity">
+        </activity>
+        <activity
+                android:name=".WelcomeActivity"
+                android:theme="@style/Theme.WelcomeActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
+
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>

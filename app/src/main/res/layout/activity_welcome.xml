@@ -101,9 +101,20 @@
                 android:onClick="startGame"
                 android:text="@string/start"/>
 
+
         <Button android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/color_1024"
+                android:backgroundTint="@color/color_2048"
+                style="@style/WelcomeButton"
+                app:icon="@drawable/baseline_gamepad_white_24dp"
+                android:id="@+id/about"
+                android:onClick="aboutGame"
+                android:text="@string/about"/>
+
+
+        <Button android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/color_64"
                 style="@style/WelcomeButton"
                 android:id="@+id/exit"
                 android:onClick="exitGame"
