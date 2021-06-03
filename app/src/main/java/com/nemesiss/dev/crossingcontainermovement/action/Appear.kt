@@ -1,8 +1,8 @@
 package com.nemesiss.dev.crossingcontainermovement.action
 
 import com.nemesiss.dev.crossingcontainermovement.GameBoard
-import com.nemesiss.dev.crossingcontainermovement.GameBoardMap
 import com.nemesiss.dev.crossingcontainermovement.model.Coord
+import com.nemesiss.dev.crossingcontainermovement.model.GameBoardMap
 import com.nemesiss.dev.crossingcontainermovement.view.GameBoardView
 
 data class Appear(val coord: Coord, val element: GameBoard.Element) : ElementAction {

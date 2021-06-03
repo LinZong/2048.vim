@@ -1,7 +1,7 @@
 package com.nemesiss.dev.crossingcontainermovement.action
 
 import com.nemesiss.dev.crossingcontainermovement.GameBoard
-import com.nemesiss.dev.crossingcontainermovement.GameBoardMap
+import com.nemesiss.dev.crossingcontainermovement.model.GameBoardMap
 import com.nemesiss.dev.crossingcontainermovement.view.GameBoardView
 
 object Reset : ElementAction {

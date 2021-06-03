@@ -3,13 +3,13 @@ package com.nemesiss.dev.crossingcontainermovement
 import android.util.Log
 import com.nemesiss.dev.crossingcontainermovement.action.*
 import com.nemesiss.dev.crossingcontainermovement.model.Coord
+import com.nemesiss.dev.crossingcontainermovement.model.GameBoardMap
+import com.nemesiss.dev.crossingcontainermovement.util.NO_OP
 import com.nemesiss.dev.crossingcontainermovement.view.GameBoardView
 import java.util.concurrent.ThreadLocalRandom
 import kotlin.math.max
 import kotlin.math.min
 
-
-typealias GameBoardMap = Array<Array<GameBoard.Element>>
 
 /**
  * Control flow:
@@ -18,7 +18,7 @@ typealias GameBoardMap = Array<Array<GameBoard.Element>>
 class GameBoard(val bindingView: GameBoardView) {
 
     companion object {
-        fun newViewOf(size: Int) = Array(size) { Array(size) { Element.EMPTY } }
+        fun newViewOf(size: Int) = GameBoardMap(size)
     }
 
     enum class GestureDirection {

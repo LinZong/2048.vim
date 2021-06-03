@@ -1,10 +1,9 @@
 package com.nemesiss.dev.crossingcontainermovement
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import com.afollestad.materialdialogs.MaterialDialog
+import androidx.appcompat.app.AppCompatActivity
 import com.nemesiss.dev.crossingcontainermovement.databinding.ActivityWelcomeBinding
 import dagger.hilt.android.AndroidEntryPoint
 

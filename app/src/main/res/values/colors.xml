@@ -8,6 +8,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="container_background">#cdc1b4</color>
+    <color name="game_background">#eceae0</color>
 
     <color name="board_background">#bbada0</color>
 
