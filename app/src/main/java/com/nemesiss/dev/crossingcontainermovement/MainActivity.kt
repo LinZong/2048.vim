@@ -3,8 +3,10 @@ package com.nemesiss.dev.crossingcontainermovement
 import android.os.Bundle
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import com.afollestad.materialdialogs.MaterialDialog
 import com.nemesiss.dev.crossingcontainermovement.databinding.ActivityMainBinding
 import com.nemesiss.dev.crossingcontainermovement.model.Coord
+import com.nemesiss.dev.crossingcontainermovement.util.NO_OP
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -28,7 +30,18 @@ class MainActivity : AppCompatActivity() {
 //
 //        fakeSetup(fakeMap)
 
-        binding.reset.setOnClickListener { gameBoard.reset() }
+        binding.reset.setOnClickListener {
+            MaterialDialog(this).show {
+                title(text = "Confirm")
+                message(text = "Are you sure to reset current game board?")
+                positiveButton {
+                    gameBoard.reset()
+                }
+                negativeButton {
+                    NO_OP()
+                }
+            }
+        }
     }
 
     private fun setup() {

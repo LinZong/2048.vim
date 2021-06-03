@@ -46,8 +46,11 @@ class NumericElement @JvmOverloads constructor(
             )
             binding.root.background =
                 ta.getDrawable(R.styleable.NumericElement_cardBackground) ?: context.getDrawable(R.color.purple_200)
+            value = ta.getInteger(R.styleable.NumericElement_value, 2)
             ta.recycle()
         }
+        binding.numberTextview.isClickable = false
+        binding.numberTextview.isFocusable = false
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -89,6 +92,8 @@ class NumericElement @JvmOverloads constructor(
             .rectangle()
             .cornerRadius(dp2Px(4))
             .solidColor(color)
+            .ripple()
+            .rippleColor(Color.WHITE)
             .build()
     }
 }

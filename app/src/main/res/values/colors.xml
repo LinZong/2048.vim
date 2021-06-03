@@ -11,6 +11,7 @@
 
     <color name="board_background">#bbada0</color>
 
+    <color name="color_0">#FF9800</color>
     <color name="color_2">#f94c9e</color>
     <color name="color_4">#d24cf9</color>
     <color name="color_8">#894cf9</color>

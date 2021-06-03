@@ -24,6 +24,7 @@ class ElementColorTable private constructor() {
 
     private fun prepare(context: Context) {
         val refs = arrayOf(
+            0 to color_0,
             2 to color_2,
             4 to color_4,
             8 to color_8,
