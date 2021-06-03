@@ -1,7 +1,5 @@
 package com.nemesiss.dev.crossingcontainermovement.view.animator
 
-import android.util.Log
-
 class AnimatorTracker {
     inner class TrackingWrapper constructor(val animator: CallbackAnimator) : CallbackAnimator {
         private lateinit var originalOnEnd: () -> Unit
@@ -25,8 +23,8 @@ class AnimatorTracker {
         }
 
         private fun wrapOnEnd(onEnd: () -> Unit): () -> Unit = {
-            decrease()
             onEnd()
+            decrease()
         }
     }
 
@@ -45,13 +43,11 @@ class AnimatorTracker {
     @Synchronized
     fun increase() {
         runningAnimator++
-        Log.w("ATTTTT", "Inc, ${runningAnimator}")
     }
 
 
     @Synchronized
     fun decrease() {
         runningAnimator--
-        Log.w("ATTTTT", "Dec, ${runningAnimator}")
     }
 }

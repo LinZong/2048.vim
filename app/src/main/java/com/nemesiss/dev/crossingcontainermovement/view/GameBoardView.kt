@@ -174,7 +174,10 @@ class GameBoardView @JvmOverloads constructor(
                     }
                     if (action.bumpOnEnd) {
                         numericSquare.value *= 2
-                        toContainer.post { bumpView(numericSquare) }
+                        // here we have to hold another lock to prevent any unintended movement
+                        // in such a layout cycle between this animation end and bump animation start.
+                        animatorTracker.increase()
+                        bumpView(numericSquare)
                     }
                 }
             }
@@ -254,7 +257,12 @@ class GameBoardView @JvmOverloads constructor(
     }
 
     private fun bumpView(view: View) {
-        animatorTracker.track { BumpCombinationAnimator(decorView, view) }.start()
+        animatorTracker.track {
+            BumpCombinationAnimator(decorView, view) {
+                // release lock
+                animatorTracker.decrease()
+            }
+        }.start()
     }
 
     private fun buildNumericElement(element: GameBoard.Element): NumericElement {
