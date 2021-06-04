@@ -22,7 +22,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintVertical_bias="0.2" android:id="@+id/gridLayout">
 
-        <com.nemesiss.dev.crossingcontainermovement.view.NumericElement
+        <com.nemesiss.dev.vim2048.view.NumericElement
                 android:background="@color/container_background"
                 android:layout_margin="4dp"
                 android:layout_width="0dp"
@@ -35,7 +35,7 @@
                 android:transitionName="number_2"
                 app:value="2"/>
 
-        <com.nemesiss.dev.crossingcontainermovement.view.NumericElement
+        <com.nemesiss.dev.vim2048.view.NumericElement
                 android:background="@color/container_background"
                 android:layout_margin="4dp"
                 android:layout_width="0dp"
@@ -46,7 +46,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 app:value="0"/>
-        <com.nemesiss.dev.crossingcontainermovement.view.NumericElement
+        <com.nemesiss.dev.vim2048.view.NumericElement
                 android:background="@color/container_background"
                 android:layout_margin="4dp"
                 android:layout_width="0dp"
@@ -58,7 +58,7 @@
                 android:focusable="true"
                 android:transitionName="number_4"
                 app:value="4"/>
-        <com.nemesiss.dev.crossingcontainermovement.view.NumericElement
+        <com.nemesiss.dev.vim2048.view.NumericElement
                 android:background="@color/container_background"
                 android:layout_margin="4dp"
                 android:layout_width="0dp"

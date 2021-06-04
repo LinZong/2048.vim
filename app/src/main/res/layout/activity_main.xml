@@ -8,13 +8,13 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         tools:context=".MainActivity">
 
-    <com.nemesiss.dev.crossingcontainermovement.view.GameBoardView android:layout_width="350dp"
-                                                                   android:padding="2dp"
-                                                                   android:background="@color/board_background"
-                                                                   android:id="@+id/game_board_view"
-                                                                   android:layout_centerInParent="true"
-                                                                   android:layout_height="350dp"
-                                                                   app:size="4"/>
+    <com.nemesiss.dev.vim2048.view.GameBoardView android:layout_width="350dp"
+                                                 android:padding="2dp"
+                                                 android:background="@color/board_background"
+                                                 android:id="@+id/game_board_view"
+                                                 android:layout_centerInParent="true"
+                                                 android:layout_height="350dp"
+                                                 app:size="4"/>
 
     <Button android:layout_width="wrap_content"
             android:layout_height="wrap_content"

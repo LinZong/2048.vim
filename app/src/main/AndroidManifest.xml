@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           xmlns:tools="http://schemas.android.com/tools"
-          package="com.nemesiss.dev.crossingcontainermovement">
+          package="com.nemesiss.dev.vim2048">
 
     <application
-            android:name=".GameApplication"
+            android:name="com.nemesiss.dev.vim2048.GameApplication"
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
@@ -12,20 +12,20 @@
             android:supportsRtl="false"
             android:theme="@style/Theme.CrossingContainerMovement"
             tools:replace="android:supportsRtl">
-        <activity android:name=".AboutActivity"
+        <activity android:name="com.nemesiss.dev.vim2048.AboutActivity"
                   android:theme="@style/Theme.WelcomeActivity">
         </activity>
         <activity
-                android:name=".WelcomeActivity"
+                android:name="com.nemesiss.dev.vim2048.WelcomeActivity"
+                android:screenOrientation="portrait"
                 android:theme="@style/Theme.WelcomeActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
         <activity
-                android:name=".MainActivity"
+                android:name="com.nemesiss.dev.vim2048.MainActivity"
                 android:screenOrientation="portrait">
         </activity>
     </application>
