@@ -29,6 +29,7 @@ import com.nemesiss.dev.vim2048.view.animator.typeevaluator.RGB
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlin.math.abs
+import kotlin.math.min
 
 @AndroidEntryPoint
 class GameBoardView @JvmOverloads constructor(
@@ -221,6 +222,14 @@ class GameBoardView @JvmOverloads constructor(
         val set = AnimatorSet()
         set.playTogether(animators)
         set.start()
+    }
+
+    override fun onMeasure(widthSpec: Int, heightSpec: Int) {
+        val width = MeasureSpec.getSize(widthSpec)
+        val height = MeasureSpec.getSize(heightSpec)
+        val size = min(width, height)
+        val spec = MeasureSpec.makeMeasureSpec(size, MeasureSpec.EXACTLY)
+        super.onMeasure(spec, spec)
     }
 
     private fun resize(oldSize: Int, newSize: Int) {
