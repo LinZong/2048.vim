@@ -6,6 +6,7 @@ import com.nemesiss.dev.vim2048.manager.SaveDataManager
 import com.nemesiss.dev.vim2048.model.Coord
 import com.nemesiss.dev.vim2048.model.GameBoardMap
 import com.nemesiss.dev.vim2048.view.GameBoardView
+import com.nemesiss.dev.vim2048.view.ScoreBoard
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import java.util.concurrent.ThreadLocalRandom
 import kotlin.math.max
@@ -17,7 +18,11 @@ import kotlin.math.min
  * GameBoardView receives gesture -> notify GameBoard with action -> GameBoard calculates movement sequences -> GameBoardView applies.
  */
 @ObsoleteCoroutinesApi
-class GameBoard(val bindingView: GameBoardView) {
+class GameBoard(
+    val bindingView: GameBoardView,
+    val currentScoreBoard: ScoreBoard,
+    val highestScoreBoard: ScoreBoard
+) {
 
     companion object {
         private const val TAG = "GameBoard"
@@ -47,9 +52,6 @@ class GameBoard(val bindingView: GameBoardView) {
         fun copy() = Element(value, combineFrom)
     }
 
-    init {
-        bindingView.relatedGameBoard = this
-    }
 
     private val saver = SaveDataManager.INSTANCE
 
@@ -57,6 +59,14 @@ class GameBoard(val bindingView: GameBoardView) {
 
     var view: GameBoardMap = newViewOf(size)
         private set
+
+    init {
+        bindingView.relatedGameBoard = this
+        val score = saver.getCurrentScore()
+        val highest = saver.getHighestScore()
+        currentScoreBoard.score.setValue(score)
+        highestScoreBoard.score.setValue(highest)
+    }
 
     fun set(elements: List<Pair<Element, Coord>>) {
 
@@ -97,6 +107,7 @@ class GameBoard(val bindingView: GameBoardView) {
     }
 
     fun setup() {
+        setCurrentScore(0)
         val actions = randomlyGenerateNewElement(view, emptyList())
         playActions(actions)
         saver.saveGameMap(view)
@@ -112,7 +123,7 @@ class GameBoard(val bindingView: GameBoardView) {
         if (checkDied()) {
             return handleDied()
         }
-        val actions = computeActions(gestureDirection)
+        val actions = computeActions(gestureDirection, increaseScore = true)
         val newView = cloneView()
         playActions(newView, actions)
         saver.saveGameMap(newView)
@@ -121,21 +132,58 @@ class GameBoard(val bindingView: GameBoardView) {
         return actions
     }
 
-    private fun computeActions(direction: GestureDirection): List<ElementAction> {
+    private fun computeActions(direction: GestureDirection, increaseScore: Boolean = false): List<ElementAction> {
         val newView = cloneView()
-        val mergeActions = when (direction) {
+        val combinations = when (direction) {
             GestureDirection.UP -> newView.mergeBottomUp()
             GestureDirection.DOWN -> newView.mergeTopDown()
             GestureDirection.LEFT -> newView.mergeRTL()
             GestureDirection.RIGHT -> newView.mergeLTR()
         }
-        playActions(newView, mergeActions)
-        val alignment = handleAlignment(newView, direction)
-        playActions(newView, alignment)
-        val generate = randomlyGenerateNewElement(newView, alignment)
-        return alignment + generate
+        if (increaseScore) {
+            handleScoreIncrementOnCombinations(combinations)
+        }
+        playActions(newView, combinations)
+        val alignments = handleAlignment(newView, direction)
+        playActions(newView, alignments)
+        val generates = randomlyGenerateNewElement(newView, alignments)
+        return alignments + generates
     }
 
+    private fun handleScoreIncrementOnCombinations(combinations: List<Combination>) {
+        if (combinations.isEmpty()) return
+        // calculate score increment.
+        var total = 0
+        for (c in combinations) {
+            val from = view[c.from.row][c.from.col]
+            val to = view[c.to.row][c.to.col]
+            Log.w(TAG, "Adding $from $to")
+            total += from.value + to.value
+        }
+
+        val nextScore = currentScoreBoard.score.value + total
+        val highestScore = highestScoreBoard.score.value
+        // save score to mmkv.
+        setCurrentScore(nextScore)
+        // update highest score if needed.
+        if (nextScore > highestScore) {
+            setHighestScore(nextScore)
+        }
+    }
+
+    private fun setCurrentScore(currentScore: Int) {
+        val oldValue = currentScoreBoard.score.value
+        val delta = currentScore - oldValue
+        currentScoreBoard.score += delta
+        saver.saveCurrentScore(currentScore)
+    }
+
+    private fun setHighestScore(highestScore: Int) {
+        val oldValue = highestScoreBoard.score.value
+        val delta = highestScore - oldValue
+        highestScoreBoard.score += delta
+        saver.saveHighestScore(highestScore)
+    }
 
     private fun handleDied(): List<ElementAction> {
         // send died notification.
@@ -327,8 +375,8 @@ class GameBoard(val bindingView: GameBoardView) {
         return sequences
     }
 
-    private fun GameBoardMap.mergeLTR(): List<ElementAction> {
-        val sequences = arrayListOf<ElementAction>()
+    private fun GameBoardMap.mergeLTR(): List<Combination> {
+        val sequences = arrayListOf<Combination>()
         /**
          * 1. 从行尾起遍历整行。对于每一个元素。
          * 1.1 向前遍历看是否存在可以与之合并的元素。如有，执行合并。
@@ -354,8 +402,8 @@ class GameBoard(val bindingView: GameBoardView) {
         return sequences
     }
 
-    private fun GameBoardMap.mergeRTL(): List<ElementAction> {
-        val sequences = arrayListOf<ElementAction>()
+    private fun GameBoardMap.mergeRTL(): List<Combination> {
+        val sequences = arrayListOf<Combination>()
         /**
          * 1. 从行头起遍历整行。对于每一个元素。
          * 1.1 向后遍历看是否存在可以与之合并的元素。如有，执行合并。
@@ -381,8 +429,8 @@ class GameBoard(val bindingView: GameBoardView) {
         return sequences
     }
 
-    private fun GameBoardMap.mergeTopDown(): List<ElementAction> {
-        val sequences = arrayListOf<ElementAction>()
+    private fun GameBoardMap.mergeTopDown(): List<Combination> {
+        val sequences = arrayListOf<Combination>()
         /**
          * 1. 从列尾起遍历整行。对于每一个元素。
          * 1.1 向前遍历看是否存在可以与之合并的元素。如有，执行合并。
@@ -405,8 +453,8 @@ class GameBoard(val bindingView: GameBoardView) {
         return sequences
     }
 
-    private fun GameBoardMap.mergeBottomUp(): List<ElementAction> {
-        val sequences = arrayListOf<ElementAction>()
+    private fun GameBoardMap.mergeBottomUp(): List<Combination> {
+        val sequences = arrayListOf<Combination>()
         /**
          * 1. 从列头起遍历整行。对于每一个元素。
          * 1.1 向后遍历看是否存在可以与之合并的元素。如有，执行合并。

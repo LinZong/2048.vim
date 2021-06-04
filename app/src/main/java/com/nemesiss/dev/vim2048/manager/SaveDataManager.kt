@@ -20,7 +20,7 @@ class SaveDataManager private constructor() {
     @ObsoleteCoroutinesApi
     private val saver = saveScope.actor<GameBoardMap> {
         for (map in channel) {
-            mmkv.encode(GameConfig.SaveKey, map)
+            mmkv.encode(GameConfig.SaveMapKey, map)
             Log.w("SaveDataManager", "Game map saved!")
         }
     }
@@ -32,13 +32,29 @@ class SaveDataManager private constructor() {
         }
     }
 
-    fun savedMapExists() = mmkv.containsKey(GameConfig.SaveKey)
+    fun savedMapExists() = mmkv.containsKey(GameConfig.SaveMapKey)
 
     fun removeSavedMap() {
-        mmkv.remove(GameConfig.SaveKey)
+        mmkv.remove(GameConfig.SaveMapKey)
     }
 
     fun getSavedMap(): GameBoardMap? {
-        return mmkv.decodeParcelable(GameConfig.SaveKey, GameBoardMap::class.java)
+        return mmkv.decodeParcelable(GameConfig.SaveMapKey, GameBoardMap::class.java)
+    }
+
+    fun saveCurrentScore(score: Int) {
+        mmkv.encode(GameConfig.SaveCurrentScoreKey, score)
+    }
+
+    fun saveHighestScore(highest: Int) {
+        mmkv.encode(GameConfig.SaveHighestScoreKey, highest)
+    }
+
+    fun getCurrentScore(): Int {
+        return mmkv.decodeInt(GameConfig.SaveCurrentScoreKey, 0)
+    }
+
+    fun getHighestScore(): Int {
+        return mmkv.decodeInt(GameConfig.SaveHighestScoreKey, 0)
     }
 }

@@ -24,8 +24,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        gameBoard = GameBoard(binding.gameBoardView)
-        binding.gameBoardView.setDecorView(window.decorView as ViewGroup)
+        gameBoard = GameBoard(binding.gameBoardView, binding.yourScore, binding.highestScore)
+
+        binding.gameBoardView.decorView = window.decorView as ViewGroup
 
         val action = intent.action
         if (action == "Resume") {

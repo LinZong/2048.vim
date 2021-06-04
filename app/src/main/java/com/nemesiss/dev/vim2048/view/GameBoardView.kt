@@ -118,7 +118,7 @@ class GameBoardView @JvmOverloads constructor(
 
     private val animatorTracker = AnimatorTracker()
 
-    private lateinit var decorView: ViewGroup
+    lateinit var decorView: ViewGroup
 
     lateinit var relatedGameBoard: GameBoard
 
@@ -134,10 +134,6 @@ class GameBoardView @JvmOverloads constructor(
         resize(0, this.size)
         isClickable = true
         isFocusable = true
-    }
-
-    fun setDecorView(decor: ViewGroup) {
-        decorView = decor
     }
 
     fun setSize(size: Int) {

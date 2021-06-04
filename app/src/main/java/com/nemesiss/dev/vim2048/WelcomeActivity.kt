@@ -37,7 +37,7 @@ class WelcomeActivity : AppCompatActivity() {
      * @see [MainActivity]
      */
     fun startGame(view: View) {
-        mmkv.remove(GameConfig.SaveKey)
+        mmkv.remove(GameConfig.SaveMapKey)
         startActivity(Intent(this, MainActivity::class.java))
     }
 
