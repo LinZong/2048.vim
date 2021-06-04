@@ -13,6 +13,7 @@
             android:theme="@style/Theme.CrossingContainerMovement"
             tools:replace="android:supportsRtl">
         <activity android:name="com.nemesiss.dev.vim2048.AboutActivity"
+                  android:screenOrientation="portrait"
                   android:theme="@style/Theme.WelcomeActivity">
         </activity>
         <activity
