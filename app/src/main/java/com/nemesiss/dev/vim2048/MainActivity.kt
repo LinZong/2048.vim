@@ -24,10 +24,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-
         gameBoard = GameBoard(binding.gameBoardView)
         binding.gameBoardView.setDecorView(window.decorView as ViewGroup)
-
 
         val action = intent.action
         if (action == "Resume") {
@@ -43,8 +41,6 @@ class MainActivity : AppCompatActivity() {
             saveDataManager.removeSavedMap()
             gameBoard.setup()
         }
-
-
     }
 
     private fun setup() {
